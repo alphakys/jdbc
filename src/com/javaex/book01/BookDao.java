@@ -12,9 +12,9 @@ public class BookDao {
 	//필드
 		private String driver = "oracle.jdbc.driver.OracleDriver";
 		private String url = "jdbc:oracle:thin:@localhost:1521:xe";
-		private String id, pw = "webdb";
+		private String id = "webdb ", pw = "webdb" ;
 		
-		
+		ArrayList<BookVo> bookList;
 		
 		//생성자
 		
@@ -46,12 +46,15 @@ public class BookDao {
 		
 		//메서드
 		
-		public int bookInsert() {
+		public int bookInsert(BookVo bv) {
 			// 0. import java.sql.*;
 			Connection conn = null;
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
-
+			
+			// insert가 제대로 되었는지 확인용 count
+			int count = 0;
+			
 			try {
 			    // 1. JDBC 드라이버 (Oracle) 로딩
 				Class.forName(driver);
@@ -60,9 +63,24 @@ public class BookDao {
 				conn = DriverManager.getConnection(url, id, pw);
 
 			    // 3. SQL문 준비 / 바인딩 / 실행
-			    
+			   //SQL문
+				String query = " insert into book values(seq_book_id.nextval, ? , ? , ? , ? )";
+				
+				//바인딩
+				pstmt = conn.prepareStatement(query);
+				
+				pstmt.setString(1, bv.title);
+				pstmt.setString(2, bv.pubs);
+				pstmt.setString(3, bv.pubDate);
+				pstmt.setInt(4, bv.authorId);
+				
+				//실행
+				count = pstmt.executeUpdate();
+				
 			    // 4.결과처리
-
+				System.out.println(count + "건이 저장되었습니다.");
+				
+				
 			} catch (ClassNotFoundException e) {
 			    System.out.println("error: 드라이버 로딩 실패 - " + e);
 			} catch (SQLException e) {
@@ -85,15 +103,21 @@ public class BookDao {
 			    }
 
 			}
-			return
+			return count;
 		}
 		
-		public int bookUpdate() {
+		///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////	
+		
+		public int bookUpdate(int bookId, BookVo bv) {
 			// 0. import java.sql.*;
 			Connection conn = null;
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 
+			int count = 0;
+			
 			try {
 			    // 1. JDBC 드라이버 (Oracle) 로딩
 				Class.forName(driver);
@@ -102,7 +126,29 @@ public class BookDao {
 				conn = DriverManager.getConnection(url, id, pw);
 
 			    // 3. SQL문 준비 / 바인딩 / 실행
-			    
+				//SQL문
+				String query =   " update book ";
+						   query += " set		  title = ?, ";
+						   query += " 		  	  pubs = ? ,";
+						   query += " 			  pub_date = ? ,	 ";
+						   query += "     		  author_id = ?	";
+						   query += " where  book_id = ?  ";
+						  
+				//바인딩
+				pstmt = conn.prepareStatement(query);
+				
+				pstmt.setString(1, bv.title);
+				pstmt.setString(2, bv.pubs);
+				pstmt.setString(3, bv.pubDate);
+				pstmt.setInt(4, bv.authorId);
+				pstmt.setInt(5, bookId);
+				
+				//실행
+				count = pstmt.executeUpdate();
+				
+			    // 4.결과처리
+				System.out.println(count + "건이 업데이트 되었습니다.");
+				
 			    // 4.결과처리
 
 			} catch (ClassNotFoundException e) {
@@ -127,15 +173,22 @@ public class BookDao {
 			    }
 
 			}
-			return
+			return count;
 		}
 		
-		public int bookDelete() {
+		///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////	
+		
+		
+		public int bookDelete(int bookId) {
 			// 0. import java.sql.*;
 			Connection conn = null;
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
-
+			
+			int count = 0;
+			
 			try {
 			    // 1. JDBC 드라이버 (Oracle) 로딩
 				Class.forName(driver);
@@ -144,9 +197,18 @@ public class BookDao {
 				conn = DriverManager.getConnection(url, id, pw);
 
 			    // 3. SQL문 준비 / 바인딩 / 실행
+			    String query = " delete from book where book_id = ? ";
+			    pstmt = conn.prepareStatement(query);
+			    
+			    pstmt.setInt(1, bookId);
+			    
+			    count = pstmt.executeUpdate();
 			    
 			    // 4.결과처리
-
+			    
+			    System.out.println(count + "건이 삭제되었습니다");
+			    
+			    
 			} catch (ClassNotFoundException e) {
 			    System.out.println("error: 드라이버 로딩 실패 - " + e);
 			} catch (SQLException e) {
@@ -169,8 +231,12 @@ public class BookDao {
 			    }
 
 			}
-			return
+			return count;
 		}
+		
+		///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////	
 		
 		public ArrayList<BookVo> getBookList() {
 			// 0. import java.sql.*;
@@ -178,6 +244,8 @@ public class BookDao {
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 
+			 bookList = new ArrayList<>();
+			
 			try {
 			    // 1. JDBC 드라이버 (Oracle) 로딩
 				Class.forName(driver);
@@ -186,9 +254,33 @@ public class BookDao {
 				conn = DriverManager.getConnection(url, id, pw);
 
 			    // 3. SQL문 준비 / 바인딩 / 실행
-			    
+				//SQL문
+			    String query = "select 	book_id, ";
+						   query += "			title, ";		
+						   query += "			pubs, ";
+						   query += "			pub_date, ";
+						   query += "			author_id ";
+						   query += "from	book ";
+						   query += "order by book_id asc ";
+				//바인딩
+				pstmt = conn.prepareStatement(query);
+				rs = pstmt.executeQuery();
+				
+				while(rs.next()) {
+					
+					int bookId = rs.getInt("book_id");
+					String title = rs.getString("title");
+					String pubs = rs.getString("pubs");
+					String pubDate = rs.getString("pub_date");
+					int authorId = rs.getInt("author_id");
+					
+					bookList.add(new BookVo( bookId, title,  pubs, pubDate, authorId));
+					System.out.println(bookId + ", " + title+ ", "+pubs+ ", "+pubDate+ ", "+authorId);
+				}
+						   
 			    // 4.결과처리
-
+			
+				
 			} catch (ClassNotFoundException e) {
 			    System.out.println("error: 드라이버 로딩 실패 - " + e);
 			} catch (SQLException e) {
@@ -211,42 +303,48 @@ public class BookDao {
 			    }
 
 			}
-			return
+			return bookList;
+		}
+		
+
+		///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////	
+		
+		
+		
+		
+		
+		
+		
+		public void bookSearch(String keyword) {
+			
+			for(int i=0; i<bookList.size(); i++) {
+				
+				String findTitle = bookList.get(i).title;
+				String findPubs = bookList.get(i).pubs;
+				
+				if(bookList.get(i).title.contains(keyword)) {
+					
+					System.out.println("헤당 키워드를 "+"\n"+"book_id = "+
+												bookList.get(i).bookId + "의 title에서 찾았습니다." + "\n"+ bookList.get(i).title);
+				}
+				else if(bookList.get(i).pubs.contains(keyword)) {
+					
+					System.out.println("헤당 키워드를 "+"\n"+"book_id = "+
+												bookList.get(i).bookId + "의 pubs에서 찾았습니다." + "\n"+ bookList.get(i).pubs);
+				}
+				
+				
+				
+			}
+			
+			
 		}
 		
 		
 		
+
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 }

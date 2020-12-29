@@ -1,4 +1,4 @@
-package com.javaex.book01;
+package com.javaex.daointerface;
 
 public class BookVo {
 		
