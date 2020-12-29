@@ -30,11 +30,13 @@ public class AuthorDelete {
 			String query = "";
 			
 			query += " delete from author ";
-			query += " where author_id = 4 ";
+			query += " where author_id = ? ";
 			
 			System.out.println(query);
 			
 			pstmt = conn.prepareStatement(query);
+			pstmt.setInt(1, 4);
+			
 			
 			int count = pstmt.executeUpdate();
 			

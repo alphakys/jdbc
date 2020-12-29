@@ -28,7 +28,7 @@ public class AuthorInsert {
 		    //insert into author values(seq_author_id.nextval, '이문열', '경북 영양' )
 			
 			//한건 처리
-			String query = "insert into author values(seq_author_id2.nextval, ?, ? )";
+			String query = "insert into author values(seq_author_id.nextval, ?, ? )";
 			
 			pstmt = conn.prepareStatement(query);
 			

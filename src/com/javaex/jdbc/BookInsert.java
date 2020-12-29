@@ -30,7 +30,7 @@ public class BookInsert {
 			
 			String query = "";
 			query += " insert into 		book "; 
-			query += " values(seq_book_id2.nextval, ? , ? , ? , ?";
+			query += " values(seq_book_id.nextval, ? , ? , ? , ? ) ";
 			
 			pstmt = conn.prepareStatement(query);
 			
@@ -102,9 +102,9 @@ public class BookInsert {
 			
 			pstmt.setString(1, "26년");
 			pstmt.setString(2, "재미주의");
-			String day3 = "2015-04-01";
-			java.sql.Date d3 = java.sql.Date.valueOf(day3);
-			pstmt.setString(3, "2012-02-04");
+			String day7 = "2012-02-04";
+			java.sql.Date d7 = java.sql.Date.valueOf(day7);
+			pstmt.setDate(3, d7);
 			pstmt.setInt(4, 5);
 			
 			count += pstmt.executeUpdate();
