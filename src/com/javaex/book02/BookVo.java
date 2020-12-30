@@ -1,4 +1,4 @@
-package com.javaex.book01;
+package com.javaex.book02;
 
 public class BookVo {
 		
@@ -23,18 +23,6 @@ public class BookVo {
 		this.title = title;
 		this.pubs = pubs;
 		this.pubDate = pubDate;
-	}
-
-	public BookVo(int bookId, String title, String pubs, String pubDate, int authorId , String authorName,
-			String authorDesc) {
-	
-		this.bookId = bookId;
-		this.authorId = authorId;
-		this.title = title;
-		this.pubs = pubs;
-		this.pubDate = pubDate;
-		this.authorName = authorName;
-		this.authorDesc = authorDesc;
 	}
 	
 	

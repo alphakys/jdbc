@@ -1,4 +1,4 @@
-package com.javaex.book01;
+package com.javaex.book02;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -7,17 +7,17 @@ public class BookApp {
 
 	public static void main(String[] args) {
 		
-		
 		Scanner sc = new Scanner(System.in);
 		
 		BookDao bd = new BookDao();
 		
 		
+		bd.getBookList();
 
 		
-		String keyword = sc.nextLine();
+		String search = sc.nextLine();
 		
-		bd.bookSearch(keyword);
+		bd.bookSearch(search);
 		
 		
 		/*

@@ -1,5 +1,6 @@
 package com.javaex.book01;
 
+import java.util.List;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,36 +15,12 @@ public class BookDao {
 		private String url = "jdbc:oracle:thin:@localhost:1521:xe";
 		private String id = "webdb ", pw = "webdb" ;
 		
-		ArrayList<BookVo> bookList;
+		List<BookVo> bookList;
 		
 		//생성자
 		
 		//g/s
-		public String getDriver() {
-			return driver;
-		}
-		public void setDriver(String driver) {
-			this.driver = driver;
-		}
-		public String getUrl() {
-			return url;
-		}
-		public void setUrl(String url) {
-			this.url = url;
-		}
-		public String getId() {
-			return id;
-		}
-		public void setId(String id) {
-			this.id = id;
-		}
-		public String getPw() {
-			return pw;
-		}
-		public void setPw(String pw) {
-			this.pw = pw;
-		}
-		
+
 		//메서드
 		
 		public int bookInsert(BookVo bv) {
@@ -238,7 +215,7 @@ public class BookDao {
 		///////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////	
 		
-		public ArrayList<BookVo> getBookList() {
+		public List<BookVo> getBookList() {
 			// 0. import java.sql.*;
 			Connection conn = null;
 			PreparedStatement pstmt = null;
@@ -259,9 +236,11 @@ public class BookDao {
 						   query += "			title, ";		
 						   query += "			pubs, ";
 						   query += "			pub_date, ";
-						   query += "			author_id ";
-						   query += "from	book ";
-						   query += "order by book_id asc ";
+						   query += "			b.author_id, ";
+						   query += "			a.author_name, ";
+						   query += "			a.author_desc ";
+						   query += "from	book b, author a ";
+						   query += "where b.author_id = a.author_id ";
 				//바인딩
 				pstmt = conn.prepareStatement(query);
 				rs = pstmt.executeQuery();
@@ -273,9 +252,13 @@ public class BookDao {
 					String pubs = rs.getString("pubs");
 					String pubDate = rs.getString("pub_date");
 					int authorId = rs.getInt("author_id");
+					String authorName = rs.getString("author_name");
+					String authorDesc = rs.getString("author_desc");
 					
-					bookList.add(new BookVo( bookId, title,  pubs, pubDate, authorId));
-					System.out.println(bookId + ", " + title+ ", "+pubs+ ", "+pubDate+ ", "+authorId);
+					/* 확인용
+					bookList.add(new BookVo( bookId, title,  pubs, pubDate, authorId, authorName, authorDesc));
+					System.out.println(bookId + ", " + title+ ", "+pubs+ ", "+pubDate+ ", "+authorId + ", "+authorName + ", "+ authorDesc);
+					*/
 				}
 						   
 			    // 4.결과처리
@@ -312,32 +295,93 @@ public class BookDao {
 		///////////////////////////////////////////////////////////////////////////////	
 		
 		
-		
-		
-		
-		
-		
-		public void bookSearch(String keyword) {
+		public List<BookVo> bookSearch(String keyword) {
 			
-			for(int i=0; i<bookList.size(); i++) {
+			// 0. import java.sql.*;
+						Connection conn = null;
+						PreparedStatement pstmt = null;
+						ResultSet rs = null;
+
+						 bookList = new ArrayList<>();
+						
+						try {
+						    // 1. JDBC 드라이버 (Oracle) 로딩
+							Class.forName(driver);
+
+						    // 2. Connection 얻어오기
+							conn = DriverManager.getConnection(url, id, pw);
+
+						    // 3. SQL문 준비 / 바인딩 / 실행
+							//SQL문
+						    String query = "select 	book_id, ";
+									   query += "			title, ";		
+									   query += "			pubs, ";
+									   query += "			pub_date, ";
+									   query += "			b.author_id, ";
+									   query += "			a.author_name, ";
+									   query += "			a.author_desc ";
+									   query += "from	book b left outer join author a ";
+									   query += "on	    b.author_id = a.author_id ";
+									   query += "where title like ?  or pubs like  ?   ";
+									   query += " or author_name like  ?  or author_desc like  ?  ";
+									   
+							//바인딩
+							pstmt = conn.prepareStatement(query);
+							
+							
+							keyword = "%"+keyword+"%";
+									
+							pstmt.setString(1, keyword);
+							pstmt.setString(2, keyword);
+							pstmt.setString(3, keyword);
+							pstmt.setString(4, keyword);
+							rs = pstmt.executeQuery();
+							
+							while(rs.next()) {
+								
+								int bookId = rs.getInt("book_id");
+								String title = rs.getString("title");
+								String pubs = rs.getString("pubs");
+								String pubDate = rs.getString("pub_date");
+								int authorId = rs.getInt("author_id");
+								String authorName = rs.getString("author_name");
+								String authorDesc = rs.getString("author_desc");
+								
+								
+								bookList.add(new BookVo( bookId, title,  pubs, pubDate, authorId, authorName, authorDesc));
+								
+								System.out.println(bookId + ", " + title+ ", "+pubs+ ", "+pubDate+ ", "+authorId + ", "+authorName + ", "+ authorDesc);
+								
+							}
+									   
+						    // 4.결과처리
+						
+							
+						} catch (ClassNotFoundException e) {
+						    System.out.println("error: 드라이버 로딩 실패 - " + e);
+						} catch (SQLException e) {
+						    System.out.println("error:" + e);
+						} finally {
+						   
+						    // 5. 자원정리
+						    try {
+						        if (rs != null) {
+						            rs.close();
+						        }                
+						        if (pstmt != null) {
+						            pstmt.close();
+						        }
+						        if (conn != null) {
+						            conn.close();
+						        }
+						    } catch (SQLException e) {
+						        System.out.println("error:" + e);
+						    }
+
+						}
+						return bookList;
 				
-				String findTitle = bookList.get(i).title;
-				String findPubs = bookList.get(i).pubs;
-				
-				if(bookList.get(i).title.contains(keyword)) {
-					
-					System.out.println("헤당 키워드를 "+"\n"+"book_id = "+
-												bookList.get(i).bookId + "의 title에서 찾았습니다." + "\n"+ bookList.get(i).title);
-				}
-				else if(bookList.get(i).pubs.contains(keyword)) {
-					
-					System.out.println("헤당 키워드를 "+"\n"+"book_id = "+
-												bookList.get(i).bookId + "의 pubs에서 찾았습니다." + "\n"+ bookList.get(i).pubs);
-				}
-				
-				
-				
-			}
+			
 			
 			
 		}
